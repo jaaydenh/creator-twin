@@ -7,16 +7,15 @@ from typing import List
 texts=None
 
 def get_transcript(video_id:list[str]):
-    ytt_api = YouTubeTranscriptApi()
     content=[]
     for id in video_id:
-        content.append(ytt_api.fetch(id))
+        content.append(YouTubeTranscriptApi.get_transcript(id))
 
     script=[]
     for transcript in content:
         curr=""
         for i in transcript:
-            curr+=i.text
+            curr+=i['text']
         script.append(curr)
     return "\n".join(script)
 
@@ -47,11 +46,10 @@ def get_script(index:int):
 
 
 def video_to_chunks(id: str = "iv-5mZ_9CPY") -> List[str]:
-  ytt_api = YouTubeTranscriptApi()
-  trans=ytt_api.fetch(id)
+  trans=YouTubeTranscriptApi.get_transcript(id)
   s = ""
   for i in trans:
-    s+= i.text
+    s+= i['text']
   text_splitter = TokenTextSplitter(chunk_size=500, chunk_overlap=60)
 
   texts = text_splitter.split_text(s)
