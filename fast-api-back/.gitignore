@@ -232,3 +232,6 @@ config.ini
 secrets.json 
 
 notebooks/
+
+# sqlite database files
+*.db
