@@ -79,7 +79,6 @@ def store_video_chunks_in_db(video_id: str = "iv-5mZ_9CPY", db_name: str = 'vide
 import sqlite3
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from google.colab import userdata
 from pinecone import Pinecone
 import os
 
@@ -87,12 +86,13 @@ class Settings(BaseSettings):
     pinecone_namespace: str = "default"
     pinecone_top_k: int = 10
     pinecone_api_key: str
+    model_config = SettingsConfigDict(env_file="../.env")
 
 try:
-    settings = Settings(pinecone_api_key=userdata.get('PINECONE_API_KEY'))
+    settings = Settings()
 except Exception as e:
     print(f"Error loading settings: {e}")
-    print("Please ensure 'PINECONE_API_KEY' is set in Colab secrets.")
+    print("Please ensure 'PINECONE_API_KEY' is set as an environment variable.")
     settings = None
 
 def upsert_video_chunks_to_pinecone(video_id: str):
@@ -183,6 +183,6 @@ def upsert_video_chunks_to_pinecone(video_id: str):
 
 
 
-if name == "main":
+if __name__ == "__main__":
     store_video_chunks_in_db(video_id = "KZeIEiBrT_w")
     upsert_video_chunks_to_pinecone(video_id = "KZeIEiBrT_w")

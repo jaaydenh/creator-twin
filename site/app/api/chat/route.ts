@@ -5,18 +5,6 @@ import { z } from 'zod';
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
-// Example function showing how to use tool results for additional prompts
-async function processWeatherResult(location: string, temperature: number) {
-  // You could make an additional LLM call based on the tool result
-  const additionalContext = await generateText({
-    model: openai('gpt-4o-mini'),
-    prompt: `Based on the weather data for ${location} with temperature ${temperature}°F, 
-             provide clothing recommendations and activity suggestions. Be concise.`,
-  });
-  
-  return additionalContext.text;
-}
-
 // Helper function to call FastAPI endpoints
 async function callFastAPI(endpoint: string, method: 'GET' | 'POST' = 'GET', data?: unknown) {
   try {
@@ -41,85 +29,100 @@ async function callFastAPI(endpoint: string, method: 'GET' | 'POST' = 'GET', dat
   }
 }
 
+// Helper function to search knowledge base using RAG
+async function searchKnowledgeBase(query: string) {
+  try {
+    const apiUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8000';
+    
+    const ragResults = await callFastAPI(
+      `${apiUrl}/rag/search`,
+      'POST',
+      { query, top_k: 5 }
+    );
+
+    return ragResults;
+  } catch (error) {
+    console.error('Knowledge base search failed:', error);
+    return {
+      context_chunks: [],
+      personality_summary: "",
+      total_matches: 0,
+      error: "Knowledge base unavailable"
+    };
+  }
+}
+
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
-
-  // Alternative approach: You could modify messages based on previous tool results
-  // const enrichedMessages = await enrichMessagesWithContext(messages);
 
   const result = streamText({
     model: openai('gpt-4o-mini'),
     messages: convertToModelMessages(messages),
+    system: `You are a YouTube creator with a distinctive personality based on your video content. 
+    
+    IMPORTANT: Before answering ANY question, you MUST search your knowledge base to find relevant personality information and content that helps you respond authentically.
+    
+    When you find relevant context from your knowledge base:
+    1. Use the personality traits and speaking style to inform your response tone
+    2. Reference specific examples or content when relevant
+    3. Maintain consistency with your established personality
+    
+    Information from your knowledge base takes precedence over general knowledge. Always respond as yourself based on your content and personality.`,
     stopWhen: stepCountIs(5),
     tools: {
-        weather: tool({
-          description: 'Get the weather in a location (fahrenheit)',
-          inputSchema: z.object({
-            location: z.string().describe('The location to get the weather for'),
-          }),
-          execute: async ({ location }) => {
-            try {
-              const apiUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8000';
-              
-              const weatherData = await callFastAPI(
-                `${apiUrl}/weather?location=${encodeURIComponent(location)}`
-              );
-              
-              return {
-                location,
-                temperature: weatherData.temperature,
-                condition: weatherData.condition,
-                humidity: weatherData.humidity,
-              };
-            } catch (error) {
-              // Fallback to mock data if API fails
-              console.error('Weather API failed, using mock data:', error);
-              const temperature = Math.round(Math.random() * (90 - 32) + 32);
-              return {
-                location,
-                temperature,
-                condition: 'Unknown',
-                humidity: 50,
-                error: 'API unavailable, using mock data'
-              };
-            }
-          },
+      searchKnowledgeBase: tool({
+        description: 'Search your knowledge base for relevant content and personality information to inform your response. Always use this tool on the first request in a conversation.',
+        inputSchema: z.object({
+          query: z.string().describe('The search query to find relevant personality information and content'),
         }),
-      },
-      onStepFinish: async (step) => {
-        console.log('Step completed');
-        
-        if (step.toolCalls) {
-          step.toolCalls.forEach((toolCall) => {
-            console.log('Tool called:', toolCall.toolName);
-            console.log('Tool input:', toolCall.input);
-            
-            // You can access the tool execution result from step.toolResults
-          });
-        }
-        
-        if (step.toolResults) {
-          for (const toolResult of step.toolResults) {
-            console.log('Tool result:', toolResult.output);
+        execute: async ({ query }) => {
+          const results = await searchKnowledgeBase(query);
+          console.log('searchKnowledgeBase tool called:', query);
+          console.log('RAG results:', results);
+          
+          // Format the results for the LLM
+          let formattedResults: {
+            found_relevant_content: boolean;
+            personality_summary: any;
+            relevant_chunks: any[];
+            error?: string;
+          } = {
+            found_relevant_content: results.total_matches > 0,
+            personality_summary: results.personality_summary,
+            relevant_chunks: results.context_chunks?.slice(0, 3).map((chunk: any) => ({
+              content: chunk.chunk_text?.substring(0, 300) + "...",
+              relevance_score: chunk.relevance_score,
+              topics: chunk.topics,
+              speaking_style: chunk.speaking_style
+            })) || []
+          };
+          
+          if (results.error) {
+            formattedResults.error = results.error;
+            formattedResults.found_relevant_content = false;
           }
+          
+          return formattedResults;
+        },
+      }),
+    },
+    onStepFinish: async (step) => {
+      console.log('Step completed');
+      
+      if (step.toolCalls) {
+        step.toolCalls.forEach((toolCall) => {
+          console.log('Tool called:', toolCall.toolName);
+          console.log('Tool input:', toolCall.input);
+        });
+      }
+      
+      if (step.toolResults) {
+        for (const toolResult of step.toolResults) {
+          console.log('Tool result:', toolResult.output);
         }
       }
+    }
   });
 
   return result.toUIMessageStreamResponse();
 }
-
-// Alternative approach: Enrich messages with additional context
-// async function enrichMessagesWithContext(messages: UIMessage[]): Promise<UIMessage[]> {
-//   const enrichedMessages = [...messages];
-//   
-//   // Add system message with additional context based on previous tool results
-//   // You could store tool results in a database and retrieve them here
-//   enrichedMessages.unshift({
-//     id: 'system-context',
-//     role: 'system',
-//     content: 'You have access to weather data. Use it to provide helpful recommendations.'
-//   });
-//   
-//   return enrichedMessages;
-// }
