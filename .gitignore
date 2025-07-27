@@ -7,3 +7,11 @@
 # misc
 .DS_Store
 *.pem
+
+# environment variables
+.env
+
+# database files
+*.db
+*.sqlite
+*.sqlite3
