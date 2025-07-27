@@ -24,21 +24,21 @@ def health():
 
 
 
-@app.post("/my_personality",)
+@app.post("/generate_personality_from_videos",)
 def personality(video_id:VideoId=Body(...)):
     return get_personality(list(video_id.video_id))
 
 
-@app.get("/my_details")
+@app.get("/creator_background_details")
 def my_details():
     return my_info()
 
 
 
-@app.post("/create_table")
-def create_table():
+# @app.post("/create_table")
+# def create_table():
   
-    return {"message": "Table created"}
+#     return {"message": "Table created"}
 
 
 @app.post("/load_data")
@@ -54,18 +54,9 @@ def load_data_to_pinecone(creator_id : str, video_id:VideoId=Body(...)):
         return {"message": f"Error loading data to Pinecone: {e}"}
 
 
-@app.get("/retrieve_data")
+@app.get("/retrieve_pinecone_data")
 def retrieve_data(creator_id: str, search_query:str):
     try:
         return semantic_search_by_creator(creator_id=creator_id, search_query=search_query)
     except Exception as e:
         return {"message": f"Error retrieving data: {e}"}
-
-
-
-if __name__ == "__main__":
-    create_video_creator_table()
-    store_video_chunks_in_db(video_id="-QTkPfq7w1A")
-    insert_video_creator(video_id = "-QTkPfq7w1A", creator_id = "creator123")
-    upsert_video_chunks_to_pinecone(video_id="-QTkPfq7w1A")
-    print(semantic_search_by_creator(creator_id="creator123", search_query="mechanism shrinks ?"))

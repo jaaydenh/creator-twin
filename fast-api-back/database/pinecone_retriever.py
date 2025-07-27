@@ -1,5 +1,10 @@
 from config.pinecone_config import settings
 from pinecone import Pinecone
+from pydantic import BaseModel
+from typing import List
+
+class User(BaseModel):
+    friend_ids: List[int]
 
 def semantic_search_by_creator(creator_id: str, search_query: str, min_score_threshold: float = 0.5):
     """
@@ -125,6 +130,18 @@ def semantic_search_by_creator(creator_id: str, search_query: str, min_score_thr
                 print(f"Problematic result object: {result}")
 
 
-    return top_n_results
+    # Instead of returning raw result objects, serialize them:
+    return [serialize_result(r) for r in top_n_results]
+
+def serialize_result(result):
+    # Safely extract fields and score
+    fields = result.get('fields', {}) if hasattr(result, 'get') else getattr(result, 'fields', {})
+    return {
+        "video_id": fields.get("video_id", "N/A"),
+        "chunk_index": fields.get("chunk_index", "N/A"),
+        "creator_id": fields.get("creator_id", "N/A"),
+        "text": fields.get("text", "N/A"),
+        "score": getattr(result, "_score", None)
+    }
 
 
