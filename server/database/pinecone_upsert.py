@@ -1,7 +1,7 @@
 from config.pinecone_config import settings
 import sqlite3
 from pinecone import Pinecone
-from database.charachter_db import insert_video_creator
+from database.character_db import insert_video_creator
 
 def upsert_video_chunks_to_pinecone(video_id: str):
     """

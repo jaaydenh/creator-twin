@@ -1,4 +1,4 @@
-# Character AI
+# Transcript Ingestion, Personality and Knowledge Services
 
 This project is a comprehensive platform for creating and interacting with AI-powered character personas. It analyzes the communication style of a content creator from their YouTube video transcripts and generates a detailed personality profile. This profile is then used to power a conversational AI that can be interacted with via a web interface.
 
@@ -26,14 +26,14 @@ The project is divided into two main components:
 ## Project Structure
 
 ```
-Charachter/
+Character/
 ├── app.py                  # FastAPI application
 ├── character_db.db         # SQLite database for character data
 ├── config/                 # Configuration files for clients and services
 │   ├── client.py           # AWS Bedrock client configuration
 │   └── pinecone_config.py  # Pinecone client configuration
 ├── database/               # Database interaction modules
-│   ├── charachter_db.py    # SQLite database functions
+│   ├── character_db.py     # SQLite database functions
 │   ├── pinecone_retriever.py # Pinecone data retrieval
 │   └── pinecone_upsert.py    # Pinecone data upserting
 ├── main.py                 # Streamlit application
@@ -54,31 +54,22 @@ Charachter/
 
 ## Setup and Installation
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    cd Charachter
-    ```
-
-2.  **Create and activate a virtual environment:**
+1.  **Create and activate a virtual environment:**
     ```bash
     python -m venv venv
     source venv/bin/activate
     ```
 
-3.  **Install the dependencies:**
+2.  **Install the dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Set up environment variables:**
+3.  **Set up environment variables:**
     Create a `.env` file in the root directory and add the following:
 
-    Currently this project uses bedrock but we can change it to any model  gemini,openai etc
-    To update the model u can modify config/client.py file .
     ```
-    BEDROCK_INFERENCE_PROFILE_ARN=<your-bedrock-arn>
-    AWS_DEFAULT_REGION=<your-aws-region>
+    OPENAI_API_KEY=<your-openai-api-key>
     PINECONE_API_KEY=<your-pinecone-api-key>
     ```
 
@@ -102,7 +93,7 @@ The API will be available at `http://127.0.0.1:8000`. You can access the interac
 - `POST /load_data`: Loads video transcript chunks into the local SQLite database and Pinecone.
 - `GET /retrieve_pinecone_data`: Performs a semantic search on the Pinecone database for a given creator and query.
 
-### Streamlit Frontend
+### Streamlit Frontend used for testing
 
 To run the Streamlit frontend, use the following command:
 
