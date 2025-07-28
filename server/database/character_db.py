@@ -80,7 +80,7 @@ def create_video_creator_table(db_name: str = 'video_chunks.db', table_name: str
             conn.close()
             print("Database connection closed.")
 
-def insert_video_creator(video_id: str, creator_id: str, db_name: str = 'character_db.db', table_name: str = 'video_creators'):
+def insert_video_creator(video_id: str, creator_id: str, db_name: str = 'video_chunks.db', table_name: str = 'video_creators'):
     """
     Inserts a video ID and creator ID into the video_creators table.
     If the video ID already exists, it will be ignored due to the PRIMARY KEY constraint.
