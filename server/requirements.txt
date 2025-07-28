@@ -72,3 +72,5 @@ youtube-transcript-api==1.2.1
 zstandard==0.23.0
 tiktoken
 streamlit
+google-genai #if not using Google GenAI, remove this line
+langchain_openai #if not using OpenAI, remove this line
