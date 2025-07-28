@@ -1,7 +1,7 @@
 import sqlite3
 from tools.transcript import video_to_chunks
 
-def store_video_chunks_in_db(video_id: str = "iv-5mZ_9CPY", db_name: str = 'character_db.db', table_name: str = 'chunks'):
+def store_video_chunks_in_db(video_id: str = "iv-5mZ_9CPY", db_name: str = 'video_chunks.db', table_name: str = 'chunks'):
     """
     Fetches video transcript chunks and stores them in an SQLite database.
     Checks if chunks for the video ID already exist before inserting.
@@ -51,7 +51,7 @@ def store_video_chunks_in_db(video_id: str = "iv-5mZ_9CPY", db_name: str = 'char
 
 
 
-def create_video_creator_table(db_name: str = 'character_db.db', table_name: str = 'video_creators'):
+def create_video_creator_table(db_name: str = 'video_chunks.db', table_name: str = 'video_creators'):
     """
     Creates a table to store video IDs and creator IDs in an SQLite database.
 

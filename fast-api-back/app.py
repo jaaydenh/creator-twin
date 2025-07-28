@@ -47,7 +47,7 @@ def load_data_to_pinecone(creator_id : str, video_id:VideoId=Body(...)):
     try:
         create_video_creator_table()
         store_video_chunks_in_db(video_id=video_id.video_id[0])
-        insert_video_creator(creator_id = creator_id, video_id = video_id)
+        insert_video_creator(creator_id = creator_id, video_id = video_id[0])
         upsert_video_chunks_to_pinecone(video_id=video_id.video_id[0])
         return {"message": "Data loaded to Pinecone"}
     except Exception as e:
