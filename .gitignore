@@ -15,3 +15,10 @@
 *.db
 *.sqlite
 *.sqlite3
+
+#pyc files
+*.pyc
+*.pyo
+
+# Python cache
+__pycache__/
