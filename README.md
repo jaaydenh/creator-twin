@@ -153,15 +153,15 @@ This will launch the prototype chat interface.
 
 Here are some screenshots of the Creator Twin platform in action:
 
-![NextJS Chat UI](assets\nextjs-front.png)
+![NextJS Chat UI](assets/nextjs-front.png)
 
 
 ![Streamlit Chat UI](assets/streamlit-front.png)
 
 
-![Dynamic Data Input By Creator](assets\creater-input.png)
+![Dynamic Data Input By Creator](assets/creater-input.png)
 
 
-![API Docs](assets\api-docs.png)
+![API Docs](assets/api-docs.png)
 
 ---
