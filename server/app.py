@@ -13,6 +13,9 @@ from database.pinecone_upsert import upsert_video_chunks_to_pinecone
 from database.pinecone_retriever import semantic_search_by_creator
 from database.character_db import store_video_chunks_in_db,create_video_creator_table,insert_video_creator
 import uvicorn
+from routers.user_db_routers import router as user_db_router
+from routers.chat_workflow_router import router as chat_workflow_router
+
 
 app = FastAPI(title="Creator Twin RAG API", version="1.0.0",)
 
@@ -27,10 +30,6 @@ def personality(video_id:VideoId=Body(...)):
 @app.get("/creator_background_details")
 def my_details():
     return my_info()
-
-# @app.post("/create_table")
-# def create_table():
-#     return {"message": "Table created"}
 
 @app.post("/load_data")
 def load_data_to_pinecone(creator_id : str, video_id:VideoId=Body(...)):
@@ -50,6 +49,10 @@ def retrieve_data(creator_id: str, search_query:str):
         return semantic_search_by_creator(creator_id=creator_id, search_query=search_query)
     except Exception as e:
         return {"message": f"Error retrieving data: {e}"}
+
+app.include_router(user_db_router) # routers for user_db operations
+app.include_router(chat_workflow_router) # routers for chat workflow operations
+
 
 if __name__ == "__main__":
     create_video_creator_table()
